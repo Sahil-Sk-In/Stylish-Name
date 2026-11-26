@@ -4,50 +4,29 @@
     android:id="@+id/homeRoot"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F5E6E8">
+    android:background="#F3E5F5">
 
     <androidx.cardview.widget.CardView
         android:id="@+id/btnProfile"
-        android:layout_width="54dp"
-        android:layout_height="54dp"
+        android:layout_width="44dp"
+        android:layout_height="44dp"
         android:layout_margin="16dp"
         android:clickable="true"
         android:focusable="true"
-        app:cardCornerRadius="27dp"
+        app:cardBackgroundColor="#FFFFFF"
+        app:cardCornerRadius="12dp"
         app:cardElevation="4dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
         <ImageView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:contentDescription="Menu"
-            android:scaleType="centerCrop"
-            android:src="@drawable/ic_profile" />
-    </androidx.cardview.widget.CardView>
-
-    <androidx.cardview.widget.CardView
-        android:id="@+id/btnThemeQuick"
-        android:layout_width="38dp"
-        android:layout_height="38dp"
-        android:layout_marginTop="22dp"
-        android:layout_marginEnd="18dp"
-        android:clickable="true"
-        android:focusable="true"
-        app:cardBackgroundColor="#FFFFFF"
-        app:cardCornerRadius="12dp"
-        app:cardElevation="3dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <ImageView
-            android:id="@+id/btnThemeQuickIcon"
-            android:layout_width="18dp"
-            android:layout_height="18dp"
+            android:id="@+id/btnProfileIcon"
+            android:layout_width="22dp"
+            android:layout_height="22dp"
             android:layout_gravity="center"
-            android:contentDescription="Switch Theme"
-            android:src="@drawable/ic_settings"
-            app:tint="#1A1A2E" />
+            android:contentDescription="Sidebar Menu"
+            android:src="@drawable/ic_menu"
+            app:tint="#4A148C" />
     </androidx.cardview.widget.CardView>
 
     <TextView
@@ -56,13 +35,13 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="24dp"
         android:layout_marginEnd="24dp"
-        android:layout_marginBottom="8dp"
+        android:layout_marginBottom="6dp"
         android:ellipsize="end"
         android:gravity="center"
         android:maxLines="2"
         android:text="Hello, Sahil"
-        android:textColor="#1A1A2E"
-        android:textSize="24sp"
+        android:textColor="#4A148C"
+        android:textSize="26sp"
         android:textStyle="bold"
         app:layout_constraintBottom_toTopOf="@+id/tvGreeting"
         app:layout_constraintEnd_toEndOf="parent"
@@ -72,11 +51,11 @@
         android:id="@+id/tvGreeting"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="28dp"
+        android:layout_marginBottom="24dp"
         android:gravity="center"
         android:paddingHorizontal="36dp"
-        android:text="Good Morning, Name Maker Studio"
-        android:textColor="#996B7280"
+        android:text="Design stylish names, bios &amp; symbols offline"
+        android:textColor="#6B7280"
         android:textSize="13sp"
         app:layout_constraintBottom_toTopOf="@+id/avatarContainer"
         app:layout_constraintEnd_toEndOf="parent"
@@ -84,9 +63,9 @@
 
     <FrameLayout
         android:id="@+id/avatarContainer"
-        android:layout_width="320dp"
-        android:layout_height="320dp"
-        app:layout_constraintBottom_toTopOf="@+id/quickActionRow"
+        android:layout_width="250dp"
+        android:layout_height="250dp"
+        app:layout_constraintBottom_toTopOf="@+id/tvStudioLabel"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
@@ -101,88 +80,75 @@
 
         <View
             android:id="@+id/ringMiddle"
-            android:layout_width="266dp"
-            android:layout_height="266dp"
+            android:layout_width="206dp"
+            android:layout_height="206dp"
             android:layout_gravity="center"
             android:background="@drawable/bg_circle_outline" />
 
         <androidx.cardview.widget.CardView
             android:id="@+id/btnEditor"
-            android:layout_width="210dp"
-            android:layout_height="210dp"
+            android:layout_width="160dp"
+            android:layout_height="160dp"
             android:layout_gravity="center"
             android:clickable="true"
             android:focusable="true"
-            app:cardBackgroundColor="#1A1A2E"
-            app:cardCornerRadius="105dp"
+            app:cardBackgroundColor="#4A148C"
+            app:cardCornerRadius="80dp"
             app:cardElevation="14dp">
 
-            <ImageView
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:contentDescription="Open Keyboard Studio"
-                android:scaleType="centerCrop"
-                android:src="@drawable/ic_profile" />
-        </androidx.cardview.widget.CardView>
+                android:gravity="center"
+                android:orientation="vertical"
+                android:padding="12dp">
 
-        <ImageView
-            android:id="@+id/btnEditOverlay"
-            android:layout_width="46dp"
-            android:layout_height="46dp"
-            android:layout_gravity="center"
-            android:background="@drawable/bg_circle_icon"
-            android:contentDescription="Edit"
-            android:elevation="16dp"
-            android:padding="12dp"
-            android:src="@drawable/ic_edit_pencil" />
+                <ImageView
+                    android:id="@+id/btnEditOverlay"
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
+                    android:contentDescription="Open Name Maker Studio"
+                    android:src="@drawable/ic_edit_pencil"
+                    app:tint="#FFFFFF" />
+
+                <TextView
+                    android:id="@+id/tvHeroAction"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:gravity="center"
+                    android:text="OPEN STUDIO"
+                    android:textColor="#FFFFFF"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.06" />
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
     </FrameLayout>
 
-    <LinearLayout
-        android:id="@+id/quickActionRow"
-        android:layout_width="wrap_content"
+    <TextView
+        android:id="@+id/tvStudioLabel"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
+        android:layout_marginBottom="20dp"
         android:gravity="center"
-        android:orientation="horizontal"
+        android:paddingHorizontal="32dp"
+        android:text="Tap above to open Name Maker Studio"
+        android:textColor="#4A148C"
+        android:textSize="14sp"
+        android:textStyle="bold"
         app:layout_constraintBottom_toTopOf="@+id/tvBottom"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent">
-
-        <Button
-            android:id="@+id/btnOpenEditorPill"
-            style="@style/Widget.MaterialComponents.Button"
-            android:layout_width="wrap_content"
-            android:layout_height="40dp"
-            android:layout_marginEnd="8dp"
-            android:backgroundTint="#1A1A2E"
-            android:text="Keyboard Studio"
-            android:textAllCaps="false"
-            android:textColor="#FFFFFF"
-            android:textSize="12sp"
-            app:cornerRadius="20dp" />
-
-        <Button
-            android:id="@+id/btnMakeNamePill"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-            android:layout_width="wrap_content"
-            android:layout_height="40dp"
-            android:text="Make Name"
-            android:textAllCaps="false"
-            android:textColor="#1A1A2E"
-            android:textSize="12sp"
-            app:cornerRadius="20dp"
-            app:strokeColor="#1A1A2E" />
-    </LinearLayout>
+        app:layout_constraintStart_toStartOf="parent" />
 
     <TextView
         android:id="@+id/tvBottom"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="18dp"
-        android:text="Crafted Offline with ❤️"
-        android:textColor="#1A1A2E"
-        android:textSize="14sp"
-        android:textStyle="bold"
+        android:text="100% Offline • Instant Copy"
+        android:textColor="#6B7280"
+        android:textSize="12sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />

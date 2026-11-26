@@ -1,40 +1,35 @@
 package com.sahil.namemaker
 
 import android.app.AlertDialog
-import android.content.Intent
 import android.os.Bundle
+import android.view.animation.DecelerateInterpolator
 import android.widget.EditText
-import android.widget.ImageView
-import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
-import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
+import com.sahil.namemaker.data.OfflineRepository
 import com.sahil.namemaker.databinding.ActivityMainBinding
 import com.sahil.namemaker.fragment.CatalogFragment
-import com.sahil.namemaker.fragment.CrunchFragment
-import com.sahil.namemaker.fragment.FeedFragment
 import com.sahil.namemaker.fragment.HomeFragment
-import com.sahil.namemaker.fragment.SavedFragment
-import com.sahil.namemaker.ui.EditorActivity
-import com.sahil.namemaker.ui.MakeActivity
+import com.sahil.namemaker.utils.FontUtils
 import com.sahil.namemaker.utils.LocalStore
 import com.sahil.namemaker.utils.ThemeManager
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
 
     companion object {
         private const val TAG_HOME = "tab_home"
-        private const val TAG_CRUNCH = "tab_crunch"
         private const val TAG_CATALOG = "tab_catalog"
-        private const val TAG_FEED = "tab_feed"
-        private const val TAG_SAVED = "tab_saved"
     }
 
     private lateinit var binding: ActivityMainBinding
     private var currentTag = TAG_HOME
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        setTheme(R.style.Theme_NameMaker)
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -42,10 +37,7 @@ class MainActivity : AppCompatActivity() {
         if (savedInstanceState == null) {
             supportFragmentManager.beginTransaction()
                 .add(R.id.tabHost, HomeFragment(), TAG_HOME)
-                .add(R.id.tabHost, CrunchFragment(), TAG_CRUNCH)
                 .add(R.id.tabHost, CatalogFragment(), TAG_CATALOG)
-                .add(R.id.tabHost, FeedFragment(), TAG_FEED)
-                .add(R.id.tabHost, SavedFragment(), TAG_SAVED)
                 .commitNow()
         }
 
@@ -53,14 +45,48 @@ class MainActivity : AppCompatActivity() {
         setupDrawer()
         switchTab(TAG_HOME)
         applyCurrentTheme()
+
+        if (savedInstanceState == null) {
+            playOpeningTransition()
+        }
+
+        // Pre-warm fonts and assets in background after first frame so Studio & Catalog open instantly
+        window.decorView.post {
+            lifecycleScope.launch {
+                val appCtx = applicationContext
+                val fontJob = async { FontUtils.loadSymbolTypefaceAsync(appCtx) }
+                val catalogJob = async { OfflineRepository.getCatalog(appCtx) }
+                val alphabetJob = async { OfflineRepository.getAlphabet(appCtx) }
+                fontJob.await()
+                catalogJob.await()
+                alphabetJob.await()
+            }
+        }
+    }
+
+    private fun playOpeningTransition() {
+        val interp = DecelerateInterpolator(1.6f)
+        binding.mainContentRoot.alpha = 0f
+        binding.mainContentRoot.animate()
+            .alpha(1f)
+            .setDuration(280L)
+            .setInterpolator(interp)
+            .start()
+
+        binding.bottomNav.alpha = 0f
+        binding.bottomNav.translationY = 40f
+        binding.bottomNav.animate()
+            .alpha(1f)
+            .translationY(0f)
+            .setDuration(360L)
+            .setStartDelay(80L)
+            .setInterpolator(interp)
+            .start()
     }
 
     private fun setupBottomNav() {
         binding.tabHome.setOnClickListener { switchTab(TAG_HOME) }
-        binding.tabCrunch.setOnClickListener { switchTab(TAG_CRUNCH) }
         binding.tabCatalog.setOnClickListener { switchTab(TAG_CATALOG) }
-        binding.tabFeed.setOnClickListener { switchTab(TAG_FEED) }
-        binding.tabSaved.setOnClickListener { switchTab(TAG_SAVED) }
     }
 
     private fun setupDrawer() {
@@ -68,13 +94,8 @@ class MainActivity : AppCompatActivity() {
         binding.navigationView.setNavigationItemSelectedListener { item ->
             binding.drawerLayout.closeDrawer(GravityCompat.START)
             when (item.itemId) {
-                R.id.nav_editor -> startActivity(Intent(this, EditorActivity::class.java))
-                R.id.nav_make -> startActivity(Intent(this, MakeActivity::class.java))
-                R.id.nav_crunch -> switchTab(TAG_CRUNCH)
-                R.id.nav_catalog -> switchTab(TAG_CATALOG)
                 R.id.nav_change_name -> showChangeNameDialog()
                 R.id.nav_theme -> showThemePickerDialog()
-                R.id.nav_favorites -> switchTab(TAG_SAVED)
             }
             true
         }
@@ -88,7 +109,7 @@ class MainActivity : AppCompatActivity() {
     fun switchTab(tag: String) {
         currentTag = tag
         val tx = supportFragmentManager.beginTransaction()
-        listOf(TAG_HOME, TAG_CRUNCH, TAG_CATALOG, TAG_FEED, TAG_SAVED).forEach { t ->
+        listOf(TAG_HOME, TAG_CATALOG).forEach { t ->
             val frag = supportFragmentManager.findFragmentByTag(t)
             if (frag != null) {
                 if (t == tag) tx.show(frag) else tx.hide(frag)
@@ -105,10 +126,7 @@ class MainActivity : AppCompatActivity() {
 
         val items = listOf(
             Triple(TAG_HOME, binding.iconHome, binding.labelHome),
-            Triple(TAG_CRUNCH, binding.iconCrunch, binding.labelCrunch),
-            Triple(TAG_CATALOG, binding.iconCatalog, binding.labelCatalog),
-            Triple(TAG_FEED, binding.iconFeed, binding.labelFeed),
-            Triple(TAG_SAVED, binding.iconSaved, binding.labelSaved)
+            Triple(TAG_CATALOG, binding.iconCatalog, binding.labelCatalog)
         )
 
         items.forEach { (tag, icon, label) ->
@@ -154,6 +172,12 @@ class MainActivity : AppCompatActivity() {
         binding.mainContentRoot.setBackgroundColor(theme.bg)
         binding.bottomNav.background = ThemeManager.roundedCard(theme.dark, 0x33FFFFFF, 44f)
         binding.navigationView.setBackgroundColor(theme.dark)
+        val tintList = android.content.res.ColorStateList.valueOf(theme.accent)
+        binding.navigationView.itemIconTintList = tintList
+        binding.navigationView.getHeaderView(0)?.let { hdr ->
+            hdr.findViewById<android.view.View>(R.id.navHeaderRoot)?.setBackgroundColor(theme.dark)
+            hdr.findViewById<TextView>(R.id.tvNavBio)?.setTextColor(theme.accent)
+        }
 
         window.statusBarColor = theme.dark
         window.navigationBarColor = theme.bg
@@ -161,9 +185,6 @@ class MainActivity : AppCompatActivity() {
         updateBottomNavStyles()
 
         (supportFragmentManager.findFragmentByTag(TAG_HOME) as? HomeFragment)?.refreshUI()
-        (supportFragmentManager.findFragmentByTag(TAG_CRUNCH) as? CrunchFragment)?.applyTheme()
         (supportFragmentManager.findFragmentByTag(TAG_CATALOG) as? CatalogFragment)?.applyTheme()
-        (supportFragmentManager.findFragmentByTag(TAG_FEED) as? FeedFragment)?.applyTheme()
-        (supportFragmentManager.findFragmentByTag(TAG_SAVED) as? SavedFragment)?.applyTheme()
     }
 }

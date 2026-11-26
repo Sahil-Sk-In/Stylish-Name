@@ -1,23 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-    <group android:checkableBehavior="none">
-        <item
-            android:id="@+id/nav_editor"
-            android:icon="@drawable/ic_nav_editor"
-            android:title="Keyboard Studio" />
-        <item
-            android:id="@+id/nav_make"
-            android:icon="@drawable/ic_sparkle"
-            android:title="Make Name" />
-        <item
-            android:id="@+id/nav_crunch"
-            android:icon="@drawable/ic_nav_crunch"
-            android:title="Style Generator" />
-        <item
-            android:id="@+id/nav_catalog"
-            android:icon="@drawable/ic_grid_view"
-            android:title="Style Book (12K+)" />
-    </group>
     <item android:title="Personalize">
         <menu>
             <item
@@ -27,11 +9,7 @@
             <item
                 android:id="@+id/nav_theme"
                 android:icon="@drawable/ic_settings"
-                android:title="Theme (12 Themes)" />
-            <item
-                android:id="@+id/nav_favorites"
-                android:icon="@drawable/ic_star"
-                android:title="Favorites &amp; Saved" />
+                android:title="Theme (Royal Purple / AMOLED)" />
         </menu>
     </item>
 </menu>

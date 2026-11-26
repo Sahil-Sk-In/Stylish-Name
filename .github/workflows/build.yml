@@ -34,36 +34,36 @@ jobs:
 
     - name: Rename APKs for Release
       run: |
-        cp app/build/outputs/apk/release/app-release.apk NameMaker-v3.1.0-Release-Signed.apk
-        cp app/build/outputs/apk/debug/app-debug.apk NameMaker-v3.1.0-Debug.apk
+        cp app/build/outputs/apk/release/app-release.apk NameMaker-v3.2.0-Release-Signed.apk
+        cp app/build/outputs/apk/debug/app-debug.apk NameMaker-v3.2.0-Debug.apk
 
     - name: Upload Artifacts
       uses: actions/upload-artifact@v4
       with:
         name: NameMaker-APKs
         path: |
-          NameMaker-v3.1.0-Release-Signed.apk
-          NameMaker-v3.1.0-Debug.apk
+          NameMaker-v3.2.0-Release-Signed.apk
+          NameMaker-v3.2.0-Debug.apk
 
     - name: Publish to GitHub Releases Page
       uses: softprops/action-gh-release@v2
       with:
-        tag_name: v3.1.0
-        name: "Name Maker v3.1.0 (Exact Salaam S2 Palette, Updates & 17,031+ Styles)"
+        tag_name: v3.2.0
+        name: "Name Maker v3.2.0 (Custom Icon, Instant Launch, Clean Studio & Curated Styles)"
         body: |
-          ### Name Maker v3.1.0 - Complete Offline Release
+          ### Name Maker v3.2.0 - Complete Offline Release
 
-          **Download:** Download `NameMaker-v3.1.0-Release-Signed.apk` from **Assets** below and install directly on Android.
+          **Download:** Download `NameMaker-v3.2.0-Release-Signed.apk` from **Assets** below and install directly on Android.
 
           ---
-          #### What's New in v3.1.0:
-          - **Exact Video Blueprint UI Alignment:** Authentic Salaam Pink (`#FAF0F0` blush background, `#1F1A2C` deep indigo headers/nav, `#E898A8` rose pink accents), **Updates** screen with **Salaam** and **For You** tabs (with long-press one-click tab copy).
-          - **Master Curated Database (17,031+ Items across 19 Sections):**
-            - **4,419 Stylish Names** & **731 Bios, Quotes, Shayari & Wishes**
-            - **126 Dividers**, **Intro (47)**, **Outro (57)**, **Urdu (17)**, **Decorations (23)**, **Little ABC (176)**, **Stars (67)**, **Sets (78)**, **Combining (877)**, **Symbols (1,143)**, **Letters (1,872)**, **Marks (1,044)**, **Scripts (404)**, **Unicode (5,751)**, and **Blank Spaces (46)**.
-          - **100% Pure English & Offline:** Zero network calls, zero login/activation locks, 29 bundled Noto fonts, signed with permanent release keystore.
+          #### What's New in v3.2.0:
+          - **New Custom App Icon & Instant Dark Launch:** Custom luxury crown fountain-pen monogram icon across all adaptive/legacy densities, deep Royal Purple splash screen (zero white flash on startup), background asset/font preloading, and smooth entrance animations.
+          - **Clean UI & Two Focused Themes:** Streamlined bottom navigation (**Home** & **Catalog**), **Royal Purple** and **AMOLED Black** themes, clean sidebar drawer, and **OPEN STUDIO** hero launch button.
+          - **Professional Name Maker Studio:** Focused 8-button toolbar (`Undo`, `Redo`, `Left`, `Right`, `Space`, `Paste`, `Del`, `Clear`), dedicated corner `Save` & `Copy` buttons, 12 clean studio tabs, long-press any symbol to save into the **SAVED** tab, long-press editor box to save finished names, and an animated 3-step first-time coachmark guide.
+          - **Clean Catalog & Saved Tab:** Curated **2,536 Stylish Names** and **523 Bios & Quotes** (all chat/bot artifacts removed) plus a live **Saved ★** tab.
+          - **Expanded Curated Assets:** **112 Intros** & **122 Outros** (including 130 handcrafted new designs), **2,324 A–Z Alphabet styles** enriched with clean Unicode/confusable variants, rendered with 15 bundled Noto script & math fonts (100% offline, signed release).
         files: |
-          NameMaker-v3.1.0-Release-Signed.apk
-          NameMaker-v3.1.0-Debug.apk
+          NameMaker-v3.2.0-Release-Signed.apk
+          NameMaker-v3.2.0-Debug.apk
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

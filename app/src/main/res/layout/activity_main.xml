@@ -4,7 +4,7 @@
     android:id="@+id/drawerLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F5E6E8">
+    android:background="#120422">
 
     <LinearLayout
         android:id="@+id/mainContentRoot"
@@ -63,36 +63,6 @@
             </LinearLayout>
 
             <LinearLayout
-                android:id="@+id/tab_crunch"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:clickable="true"
-                android:focusable="true"
-                android:gravity="center"
-                android:orientation="vertical"
-                android:paddingTop="4dp"
-                android:paddingBottom="3dp">
-
-                <ImageView
-                    android:id="@+id/icon_crunch"
-                    android:layout_width="21dp"
-                    android:layout_height="21dp"
-                    android:contentDescription="Crunch"
-                    android:src="@drawable/ic_nav_crunch" />
-
-                <TextView
-                    android:id="@+id/label_crunch"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:singleLine="true"
-                    android:text="Crunch"
-                    android:textSize="10sp"
-                    android:textStyle="bold" />
-            </LinearLayout>
-
-            <LinearLayout
                 android:id="@+id/tab_catalog"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
@@ -118,66 +88,6 @@
                     android:gravity="center"
                     android:singleLine="true"
                     android:text="Catalog"
-                    android:textSize="10sp"
-                    android:textStyle="bold" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/tab_feed"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:clickable="true"
-                android:focusable="true"
-                android:gravity="center"
-                android:orientation="vertical"
-                android:paddingTop="4dp"
-                android:paddingBottom="3dp">
-
-                <ImageView
-                    android:id="@+id/icon_feed"
-                    android:layout_width="21dp"
-                    android:layout_height="21dp"
-                    android:contentDescription="Updates"
-                    android:src="@drawable/ic_nav_updates" />
-
-                <TextView
-                    android:id="@+id/label_feed"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:singleLine="true"
-                    android:text="Updates"
-                    android:textSize="10sp"
-                    android:textStyle="bold" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/tab_saved"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:clickable="true"
-                android:focusable="true"
-                android:gravity="center"
-                android:orientation="vertical"
-                android:paddingTop="4dp"
-                android:paddingBottom="3dp">
-
-                <ImageView
-                    android:id="@+id/icon_saved"
-                    android:layout_width="21dp"
-                    android:layout_height="21dp"
-                    android:contentDescription="Saved"
-                    android:src="@drawable/ic_bookmark" />
-
-                <TextView
-                    android:id="@+id/label_saved"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:singleLine="true"
-                    android:text="Saved"
                     android:textSize="10sp"
                     android:textStyle="bold" />
             </LinearLayout>

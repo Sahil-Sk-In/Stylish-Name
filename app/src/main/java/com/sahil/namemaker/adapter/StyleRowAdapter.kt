@@ -27,12 +27,17 @@ data class StyleDisplayItem(
 
 class StyleRowAdapter(
     private val context: Context,
-    private val typeface: Typeface,
+    private var typeface: Typeface,
     private val onFavoriteChanged: (() -> Unit)? = null
 ) : RecyclerView.Adapter<StyleRowAdapter.Holder>() {
 
     private val items = mutableListOf<StyleDisplayItem>()
     private var theme: S2Theme = ThemeManager.getCurrent(context)
+
+    fun setTypeface(newTypeface: Typeface) {
+        typeface = newTypeface
+        notifyDataSetChanged()
+    }
 
     fun setTheme(newTheme: S2Theme) {
         theme = newTheme

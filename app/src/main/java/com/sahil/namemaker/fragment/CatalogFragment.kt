@@ -1,5 +1,6 @@
 package com.sahil.namemaker.fragment
 
+import android.graphics.Typeface
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -22,6 +23,7 @@ import com.sahil.namemaker.data.OfflineRepository
 import com.sahil.namemaker.utils.FontUtils
 import com.sahil.namemaker.utils.LocalStore
 import com.sahil.namemaker.utils.ThemeManager
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 
 class CatalogFragment : Fragment() {
@@ -55,8 +57,12 @@ class CatalogFragment : Fragment() {
         chipsRow = view.findViewById(R.id.catalogChipsRow)
         recycler = view.findViewById(R.id.rvCatalog)
 
-        val tf = FontUtils.loadSymbolTypeface(requireContext())
-        adapter = StyleRowAdapter(requireContext(), tf)
+        adapter = StyleRowAdapter(requireContext(), Typeface.DEFAULT) {
+            updateSavedChipText()
+            if (activeChipIndex == sections.size + 1) {
+                renderItems()
+            }
+        }
         recycler?.layoutManager = LinearLayoutManager(requireContext())
         recycler?.adapter = adapter
 
@@ -85,7 +91,12 @@ class CatalogFragment : Fragment() {
         }
 
         lifecycleScope.launch {
-            sections = OfflineRepository.getCatalog(requireContext())
+            val ctx = requireContext()
+            val tfJob = async { FontUtils.loadSymbolTypefaceAsync(ctx) }
+            val catalogJob = async { OfflineRepository.getCatalog(ctx) }
+            adapter.setTypeface(tfJob.await())
+            sections = catalogJob.await()
+                .filter { it.id == "names" || it.id == "bios" }
             buildChips()
             renderItems()
             applyTheme()
@@ -94,7 +105,18 @@ class CatalogFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
+        updateSavedChipText()
+        if (activeChipIndex == sections.size + 1 && sections.isNotEmpty()) {
+            renderItems()
+        }
         applyTheme()
+    }
+
+    fun selectSavedTab() {
+        if (sections.isEmpty()) return
+        activeChipIndex = sections.size + 1
+        updateChipStyles()
+        renderItems()
     }
 
     fun applyTheme() {
@@ -117,12 +139,15 @@ class CatalogFragment : Fragment() {
 
         val labels = mutableListOf("All")
         sections.forEach { labels.add("${it.title} (${it.items.size})") }
+        labels.add("Saved ★ (${getSavedItems().size})")
 
         val density = resources.displayMetrics.density
         labels.forEachIndexed { index, label ->
             val chip = TextView(ctx).apply {
                 text = label
                 textSize = 12f
+                typeface = android.graphics.Typeface.DEFAULT_BOLD
+                gravity = android.view.Gravity.CENTER
                 setPadding((14 * density).toInt(), (7 * density).toInt(), (14 * density).toInt(), (7 * density).toInt())
                 setOnClickListener {
                     activeChipIndex = index
@@ -136,6 +161,18 @@ class CatalogFragment : Fragment() {
             chipViews.add(chip)
         }
         updateChipStyles()
+    }
+
+    private fun getSavedItems(): List<String> {
+        val ctx = context ?: return emptyList()
+        return (LocalStore.getFavorites(ctx) + LocalStore.getSavedTexts(ctx)).distinct()
+    }
+
+    private fun updateSavedChipText() {
+        val savedChip = chipViews.lastOrNull() ?: return
+        if (chipViews.size >= 2) {
+            savedChip.text = "Saved ★ (${getSavedItems().size})"
+        }
     }
 
     private fun updateChipStyles() {
@@ -152,21 +189,22 @@ class CatalogFragment : Fragment() {
 
     private fun renderItems() {
         if (!::adapter.isInitialized) return
-        val source = if (activeChipIndex == 0) {
-            sections.flatMap { it.items }
-        } else {
-            sections.getOrNull(activeChipIndex - 1)?.items ?: emptyList()
+        val savedTabIndex = sections.size + 1
+        val source = when {
+            activeChipIndex == 0 -> sections.flatMap { it.items }
+            activeChipIndex == savedTabIndex -> getSavedItems()
+            else -> sections.getOrNull(activeChipIndex - 1)?.items ?: emptyList()
         }
 
         val filtered = if (searchQuery.isEmpty()) {
-            source.take(600)
+            if (activeChipIndex == 0) source.take(2000) else source
         } else {
-            source.filter { it.contains(searchQuery, ignoreCase = true) }.take(600)
+            source.filter { it.contains(searchQuery, ignoreCase = true) }.take(2000)
         }
 
         adapter.submitList(filtered.map { StyleDisplayItem(it) })
-        tvCount?.text = if (searchQuery.isEmpty() && source.size > 600) {
-            "600 / ${source.size}"
+        tvCount?.text = if (filtered.size < source.size) {
+            "${filtered.size} / ${source.size}"
         } else {
             "${filtered.size} items"
         }

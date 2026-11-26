@@ -3,17 +3,15 @@ package com.sahil.namemaker.ui
 import android.app.AlertDialog
 import android.content.ClipboardManager
 import android.content.Context
-import android.content.Intent
 import android.graphics.Typeface
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.Gravity
-import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.inputmethod.InputMethodManager
+import android.view.animation.OvershootInterpolator
 import android.widget.LinearLayout
 import android.widget.PopupMenu
 import android.widget.TextView
@@ -25,13 +23,13 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.sahil.namemaker.R
 import com.sahil.namemaker.adapter.KeyboardKeyAdapter
 import com.sahil.namemaker.data.CatalogSection
-import com.sahil.namemaker.data.CustomCategory
 import com.sahil.namemaker.data.OfflineRepository
 import com.sahil.namemaker.databinding.ActivityEditorBinding
 import com.sahil.namemaker.utils.FontUtils
 import com.sahil.namemaker.utils.LocalStore
 import com.sahil.namemaker.utils.TextHistory
 import com.sahil.namemaker.utils.ThemeManager
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 
 class EditorActivity : AppCompatActivity() {
@@ -42,6 +40,16 @@ class EditorActivity : AppCompatActivity() {
         val isList: Boolean = false
     )
 
+    private data class GuideStep(
+        val title: String,
+        val body: String
+    )
+
+    companion object {
+        private const val PREF_GUIDE = "StudioGuidePrefs"
+        private const val KEY_GUIDE_SHOWN = "guide_shown_v1"
+    }
+
     private lateinit var binding: ActivityEditorBinding
     private lateinit var symbolTypeface: Typeface
     private lateinit var keyAdapter: KeyboardKeyAdapter
@@ -49,31 +57,43 @@ class EditorActivity : AppCompatActivity() {
 
     private var catalogSections: List<CatalogSection> = emptyList()
     private var alphabet: Map<String, List<String>> = emptyMap()
-    private var customCategories: List<CustomCategory> = emptyList()
 
     private val tabs = mutableListOf<KeyboardTab>()
     private val tabViews = mutableListOf<TextView>()
     private val letterViews = mutableListOf<TextView>()
 
+    private val guideSteps = listOf(
+        GuideStep(
+            "Step 1: Compose Your Style",
+            "Tap any letter, symbol, or template below to insert it into your text."
+        ),
+        GuideStep(
+            "Step 2: Move & Save Symbols",
+            "Use Left or Right to move between characters. Hold (long-press) any symbol below to save it into the Saved tab."
+        ),
+        GuideStep(
+            "Step 3: Save Created Names",
+            "When your name is ready, tap Save (or hold the text box) to keep it in Saved. Hold any tab to copy all items."
+        )
+    )
+    private var currentGuideStep = 0
+
     private var activeTabIndex = 0
     private var activeLetter = "A"
     private var fontSize = 17
-    private var alignIndex = 0
     private var restoringHistory = false
-    private var imeVisible = false
-    private var searchCursor = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityEditorBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        symbolTypeface = FontUtils.loadSymbolTypeface(this)
+        symbolTypeface = Typeface.DEFAULT
         binding.editor.typeface = symbolTypeface
 
         fontSize = LocalStore.getEditorFontSize(this)
         binding.editor.textSize = fontSize.toFloat()
-        binding.btnFontSize.text = "${fontSize}▼"
+        binding.btnFontSize.text = "Size: ${fontSize}▼"
 
         val preset = intent.getStringExtra("preset_text")
         val initialText = if (!preset.isNullOrEmpty()) preset else LocalStore.getEditorText(this)
@@ -91,18 +111,29 @@ class EditorActivity : AppCompatActivity() {
 
         setupEditorWatcher()
         setupToolbarListeners()
-        setupFindReplace()
-        setupSearchInput()
+        setupGuideOverlay()
         buildLetterChips()
         applyTheme()
 
+        if (savedInstanceState == null) {
+            binding.editorRoot.alpha = 0f
+            binding.editorRoot.animate().alpha(1f).setDuration(220L).start()
+        }
+
         lifecycleScope.launch {
-            catalogSections = OfflineRepository.getCatalog(this@EditorActivity)
-            alphabet = OfflineRepository.getAlphabet(this@EditorActivity)
-            customCategories = OfflineRepository.getCustomCategories(this@EditorActivity)
-            OfflineRepository.loadCrunchData(this@EditorActivity)
+            val fontJob = async { FontUtils.loadSymbolTypefaceAsync(this@EditorActivity) }
+            val catalogJob = async { OfflineRepository.getCatalog(this@EditorActivity) }
+            val alphabetJob = async { OfflineRepository.getAlphabet(this@EditorActivity) }
+
+            symbolTypeface = fontJob.await()
+            binding.editor.typeface = symbolTypeface
+            keyAdapter.setTypeface(symbolTypeface)
+
+            catalogSections = catalogJob.await()
+            alphabet = alphabetJob.await()
             buildTabs()
             selectTab(0)
+            maybeShowFirstTimeGuide()
         }
     }
 
@@ -115,27 +146,48 @@ class EditorActivity : AppCompatActivity() {
         val theme = ThemeManager.getCurrent(this)
         val onDark = ThemeManager.contrastOn(theme.dark)
         val onToolbar = ThemeManager.contrastOn(theme.toolbar)
+        val onCorner = ThemeManager.contrastOn(theme.primary)
 
         binding.editorRoot.setBackgroundColor(theme.bg)
         binding.editorHeader.setBackgroundColor(theme.dark)
-        binding.headerTitle.setTextColor(theme.accent)
+        binding.headerTitle.setTextColor(onDark)
         binding.btnFontSize.setTextColor(theme.accent)
         binding.btnBack.setColorFilter(onDark)
         binding.btnDots.setColorFilter(onDark)
 
         binding.editorToolbar.setBackgroundColor(theme.toolbar)
-        binding.findReplacePanel.setBackgroundColor(theme.toolbar)
         binding.categoryTabsScroll.setBackgroundColor(theme.dark)
         binding.alphaLetterTabsWrapper.setBackgroundColor(theme.toolbar)
 
-        val toolbarButtons = listOf(
-            binding.btnUndo, binding.btnRedo, binding.btnClipboard, binding.btnKeyboard,
-            binding.btnCursorStart, binding.btnCursorUp, binding.btnCursorEnd, binding.btnSearch,
-            binding.btnInfo, binding.btnClear, binding.btnSelectAll, binding.btnAlign,
-            binding.btnCut, binding.btnCursorLeft, binding.btnCursorDown, binding.btnCursorRight,
-            binding.btnNewLine, binding.btnBackspace, binding.btnCopy, binding.btnSpace
+        val icons = listOf(
+            binding.iconUndo, binding.iconRedo, binding.iconCursorLeft, binding.iconCursorRight,
+            binding.iconSpace, binding.iconClipboard, binding.iconBackspace, binding.iconClear
         )
-        toolbarButtons.forEach { it.setColorFilter(onToolbar) }
+        val labels = listOf(
+            binding.lblUndo, binding.lblRedo, binding.lblCursorLeft, binding.lblCursorRight,
+            binding.lblSpace, binding.lblClipboard, binding.lblBackspace, binding.lblClear
+        )
+        val iconColor = if (theme.isDark) theme.accent else theme.dark
+        icons.forEach { it.setColorFilter(iconColor) }
+        labels.forEach { it.setTextColor(iconColor) }
+
+        val toolCards = listOf(
+            binding.btnUndo, binding.btnRedo, binding.btnCursorLeft, binding.btnCursorRight,
+            binding.btnSpace, binding.btnClipboard, binding.btnBackspace, binding.btnClear
+        )
+        toolCards.forEach {
+            it.background = ThemeManager.roundedCard(theme.cardBg, 0x22000000, 14f)
+        }
+
+        val cornerColor = if (theme.isDark) theme.toolbar else theme.primary
+        binding.btnCornerSave.background = ThemeManager.roundedCard(cornerColor, 0x22000000, 24f)
+        binding.btnCornerCopy.background = ThemeManager.roundedCard(cornerColor, 0x22000000, 24f)
+        binding.iconCornerSave.setColorFilter(onCorner)
+        binding.lblCornerSave.setTextColor(onCorner)
+        binding.iconCornerCopy.setColorFilter(onCorner)
+        binding.lblCornerCopy.setTextColor(onCorner)
+
+        binding.coachmarkCard.setCardBackgroundColor(if (theme.isDark) 0xFF1F1A2C.toInt() else theme.dark)
 
         window.statusBarColor = theme.dark
         window.navigationBarColor = theme.bg
@@ -155,6 +207,12 @@ class EditorActivity : AppCompatActivity() {
             }
             override fun afterTextChanged(s: Editable?) {}
         })
+
+        // Hold editor box to quickly save text
+        binding.editor.setOnLongClickListener {
+            saveCurrentEditorText()
+            false
+        }
     }
 
     private fun setupToolbarListeners() {
@@ -163,11 +221,11 @@ class EditorActivity : AppCompatActivity() {
         binding.btnFontSize.setOnClickListener {
             val sizes = arrayOf("12", "14", "17", "20", "24", "28", "32")
             AlertDialog.Builder(this)
-                .setTitle("Editor Font Size")
+                .setTitle("Editor Text Size")
                 .setItems(sizes) { _, which ->
                     fontSize = sizes[which].toInt()
                     binding.editor.textSize = fontSize.toFloat()
-                    binding.btnFontSize.text = "${fontSize}▼"
+                    binding.btnFontSize.text = "Size: ${fontSize}▼"
                     LocalStore.setEditorFontSize(this, fontSize)
                 }
                 .show()
@@ -175,49 +233,40 @@ class EditorActivity : AppCompatActivity() {
 
         binding.btnDots.setOnClickListener { anchor ->
             val popup = PopupMenu(this, anchor)
-            popup.menu.add(0, 1, 0, "Save to Saved Texts")
+            popup.menu.add(0, 1, 0, "Copy Current Tab")
             popup.menu.add(0, 2, 1, "Share Text")
-            popup.menu.add(0, 3, 2, "Open Make Name")
-            popup.menu.add(0, 4, 3, "Switch Theme")
+            popup.menu.add(0, 3, 2, "Show Quick Guide")
             popup.setOnMenuItemClickListener { item ->
                 when (item.itemId) {
-                    1 -> {
-                        val txt = binding.editor.text.toString()
-                        if (txt.isNotBlank()) {
-                            LocalStore.saveText(this, txt)
-                            Toast.makeText(this, "Saved to Saved Texts", Toast.LENGTH_SHORT).show()
-                        }
-                    }
+                    1 -> showBulkCopyDialog()
                     2 -> {
                         val txt = binding.editor.text.toString()
                         if (txt.isNotBlank()) LocalStore.shareText(this, txt)
+                        else Toast.makeText(this, "Text box is empty", Toast.LENGTH_SHORT).show()
                     }
-                    3 -> {
-                        startActivity(Intent(this, MakeActivity::class.java))
-                    }
-                    4 -> showThemePicker()
+                    3 -> showGuideStep(0)
                 }
                 true
             }
             popup.show()
         }
 
-        val copyAction = View.OnClickListener {
+        binding.btnCornerSave.setOnClickListener {
+            saveCurrentEditorText()
+        }
+
+        binding.btnCornerCopy.setOnClickListener {
             val txt = getSelectedOrAllText()
             if (txt.isNotEmpty()) {
-                LocalStore.copyAndTrack(this, txt)
+                LocalStore.copyAndTrack(this, txt, "Copied to clipboard!")
             } else {
                 copyActiveTabItems(spaced = false)
             }
         }
-        val copyLongAction = View.OnLongClickListener {
+        binding.btnCornerCopy.setOnLongClickListener {
             showBulkCopyDialog()
             true
         }
-        binding.btnCornerCopy.setOnClickListener(copyAction)
-        binding.btnCopy.setOnClickListener(copyAction)
-        binding.btnCornerCopy.setOnLongClickListener(copyLongAction)
-        binding.btnCopy.setOnLongClickListener(copyLongAction)
 
         binding.btnUndo.setOnClickListener {
             val prev = history.undo()
@@ -239,6 +288,27 @@ class EditorActivity : AppCompatActivity() {
             }
         }
 
+        binding.btnCursorLeft.setOnClickListener {
+            binding.editor.requestFocus()
+            val pos = binding.editor.selectionStart.coerceAtLeast(0)
+            if (pos > 0) {
+                val prev = Character.offsetByCodePoints(binding.editor.text, pos, -1)
+                binding.editor.setSelection(prev)
+            }
+        }
+
+        binding.btnCursorRight.setOnClickListener {
+            binding.editor.requestFocus()
+            val pos = binding.editor.selectionEnd.coerceAtLeast(0)
+            val len = binding.editor.text.length
+            if (pos < len) {
+                val next = Character.offsetByCodePoints(binding.editor.text, pos, 1)
+                binding.editor.setSelection(next)
+            }
+        }
+
+        binding.btnSpace.setOnClickListener { insertAtCursor(" ") }
+
         binding.btnClipboard.setOnClickListener {
             val cm = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
             val clip = cm.primaryClip
@@ -248,37 +318,6 @@ class EditorActivity : AppCompatActivity() {
             }
         }
 
-        binding.btnKeyboard.setOnClickListener {
-            val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-            if (imeVisible) {
-                imm.hideSoftInputFromWindow(binding.editor.windowToken, 0)
-                imeVisible = false
-            } else {
-                binding.editor.requestFocus()
-                imm.showSoftInput(binding.editor, InputMethodManager.SHOW_IMPLICIT)
-                imeVisible = true
-            }
-        }
-
-        binding.btnCursorStart.setOnClickListener { binding.editor.setSelection(0) }
-        binding.btnCursorEnd.setOnClickListener { binding.editor.setSelection(binding.editor.text.length) }
-        binding.btnCursorLeft.setOnClickListener {
-            val pos = binding.editor.selectionStart
-            if (pos > 0) binding.editor.setSelection(pos - 1)
-        }
-        binding.btnCursorRight.setOnClickListener {
-            val pos = binding.editor.selectionEnd
-            if (pos < binding.editor.text.length) binding.editor.setSelection(pos + 1)
-        }
-        binding.btnCursorUp.setOnClickListener {
-            binding.editor.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_UP))
-        }
-        binding.btnCursorDown.setOnClickListener {
-            binding.editor.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_DOWN))
-        }
-
-        binding.btnNewLine.setOnClickListener { insertAtCursor("\n") }
-        binding.btnSpace.setOnClickListener { insertAtCursor(" ") }
         binding.btnBackspace.setOnClickListener {
             val start = binding.editor.selectionStart.coerceAtLeast(0)
             val end = binding.editor.selectionEnd.coerceAtLeast(0)
@@ -291,49 +330,6 @@ class EditorActivity : AppCompatActivity() {
             }
         }
 
-        binding.btnCut.setOnClickListener {
-            val start = binding.editor.selectionStart.coerceAtLeast(0)
-            val end = binding.editor.selectionEnd.coerceAtLeast(0)
-            if (start != end) {
-                val lo = minOf(start, end)
-                val hi = maxOf(start, end)
-                val selected = binding.editor.text.substring(lo, hi)
-                LocalStore.copyAndTrack(this, selected, "Cut to clipboard")
-                binding.editor.text.delete(lo, hi)
-            } else if (binding.editor.text.isNotEmpty()) {
-                LocalStore.copyAndTrack(this, binding.editor.text.toString(), "Cut all to clipboard")
-                binding.editor.setText("")
-            }
-        }
-
-        binding.btnSelectAll.setOnClickListener { binding.editor.selectAll() }
-
-        binding.btnAlign.setOnClickListener {
-            alignIndex = (alignIndex + 1) % 3
-            binding.editor.gravity = when (alignIndex) {
-                1 -> Gravity.CENTER_HORIZONTAL or Gravity.TOP
-                2 -> Gravity.END or Gravity.TOP
-                else -> Gravity.START or Gravity.TOP
-            }
-        }
-
-        binding.btnSearch.setOnClickListener {
-            binding.findReplacePanel.visibility =
-                if (binding.findReplacePanel.visibility == View.VISIBLE) View.GONE else View.VISIBLE
-        }
-
-        binding.btnInfo.setOnClickListener {
-            val txt = binding.editor.text.toString()
-            val lines = if (txt.isEmpty()) 0 else txt.lines().size
-            val words = if (txt.isBlank()) 0 else txt.trim().split(Regex("\\s+")).size
-            val codePoints = txt.codePointCount(0, txt.length)
-            AlertDialog.Builder(this)
-                .setTitle("Text Statistics")
-                .setMessage("Characters: ${txt.length}\nUnicode Codepoints: $codePoints\nWords: $words\nLines: $lines")
-                .setPositiveButton("OK", null)
-                .show()
-        }
-
         binding.btnClear.setOnClickListener {
             if (binding.editor.text.isNotEmpty()) {
                 binding.editor.setText("")
@@ -341,81 +337,90 @@ class EditorActivity : AppCompatActivity() {
         }
     }
 
-    private fun setupFindReplace() {
-        binding.btnFindNext.setOnClickListener { findOccurrence(forward = true) }
-        binding.btnFindPrev.setOnClickListener { findOccurrence(forward = false) }
-        binding.btnReplace.setOnClickListener {
-            val q = binding.findInput.text.toString()
-            val rep = binding.replaceInput.text.toString()
-            if (q.isEmpty()) return@setOnClickListener
-            val start = binding.editor.selectionStart.coerceAtLeast(0)
-            val end = binding.editor.selectionEnd.coerceAtLeast(0)
-            val selected = if (start != end) binding.editor.text.substring(minOf(start, end), maxOf(start, end)) else ""
-            if (selected == q) {
-                binding.editor.text.replace(minOf(start, end), maxOf(start, end), rep)
-            }
-            findOccurrence(forward = true)
+    private fun saveCurrentEditorText() {
+        val txt = binding.editor.text.toString().trim()
+        if (txt.isEmpty()) {
+            Toast.makeText(this, "Type something to save", Toast.LENGTH_SHORT).show()
+            return
         }
-        binding.btnReplaceAll.setOnClickListener {
-            val q = binding.findInput.text.toString()
-            val rep = binding.replaceInput.text.toString()
-            if (q.isEmpty()) return@setOnClickListener
-            val updated = binding.editor.text.toString().replace(q, rep)
-            binding.editor.setText(updated)
-            Toast.makeText(this, "Replaced all occurrences", Toast.LENGTH_SHORT).show()
+        LocalStore.saveText(this, txt)
+        if (!LocalStore.isFavorite(this, txt)) {
+            LocalStore.toggleFavorite(this, txt)
+        }
+        Toast.makeText(this, "Saved to Saved tab!", Toast.LENGTH_SHORT).show()
+        if (tabs.getOrNull(activeTabIndex)?.id == "SAVED") {
+            renderActiveTab()
         }
     }
 
-    private fun findOccurrence(forward: Boolean) {
-        val q = binding.findInput.text.toString()
-        val text = binding.editor.text.toString()
-        if (q.isEmpty() || text.isEmpty()) return
-        val idx = if (forward) {
-            val from = (binding.editor.selectionEnd).coerceIn(0, text.length)
-            val found = text.indexOf(q, from)
-            if (found >= 0) found else text.indexOf(q, 0)
-        } else {
-            val from = (binding.editor.selectionStart - 1).coerceAtLeast(0)
-            val found = text.lastIndexOf(q, from)
-            if (found >= 0) found else text.lastIndexOf(q)
-        }
-        if (idx >= 0) {
-            binding.editor.requestFocus()
-            binding.editor.setSelection(idx, idx + q.length)
-            searchCursor = idx
-        } else {
-            Toast.makeText(this, "Not found", Toast.LENGTH_SHORT).show()
+    private fun setupGuideOverlay() {
+        binding.btnGuideSkip.setOnClickListener { dismissGuide() }
+        binding.btnGuideNext.setOnClickListener {
+            if (currentGuideStep + 1 < guideSteps.size) {
+                showGuideStep(currentGuideStep + 1)
+            } else {
+                dismissGuide()
+            }
         }
     }
 
-    private fun setupSearchInput() {
-        binding.symbolSearchInput.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                if (tabs.getOrNull(activeTabIndex)?.id == "ALL") {
-                    renderActiveTab()
-                }
-            }
-            override fun afterTextChanged(s: Editable?) {}
-        })
+    private fun maybeShowFirstTimeGuide() {
+        val prefs = getSharedPreferences(PREF_GUIDE, Context.MODE_PRIVATE)
+        if (!prefs.getBoolean(KEY_GUIDE_SHOWN, false)) {
+            showGuideStep(0)
+        }
+    }
+
+    private fun showGuideStep(index: Int) {
+        currentGuideStep = index
+        val step = guideSteps[index]
+        binding.tvGuideTitle.text = step.title
+        binding.tvGuideBody.text = step.body
+        binding.tvGuideStep.text = "${index + 1} / ${guideSteps.size}"
+        binding.btnGuideNext.text = if (index == guideSteps.lastIndex) "Got it" else "Next"
+
+        val card = binding.coachmarkCard
+        if (card.visibility != View.VISIBLE) {
+            card.alpha = 0f
+            card.translationY = 48f
+            card.visibility = View.VISIBLE
+            card.animate()
+                .alpha(1f)
+                .translationY(0f)
+                .setDuration(320L)
+                .setInterpolator(OvershootInterpolator(1.1f))
+                .start()
+        } else {
+            card.alpha = 0.7f
+            card.animate().alpha(1f).setDuration(180L).start()
+        }
+    }
+
+    private fun dismissGuide() {
+        getSharedPreferences(PREF_GUIDE, Context.MODE_PRIVATE)
+            .edit().putBoolean(KEY_GUIDE_SHOWN, true).apply()
+        binding.coachmarkCard.animate()
+            .alpha(0f)
+            .translationY(40f)
+            .setDuration(220L)
+            .withEndAction { binding.coachmarkCard.visibility = View.GONE }
+            .start()
     }
 
     private fun buildTabs() {
         tabs.clear()
         tabs.add(KeyboardTab("ALPHABET", "ALPHABET"))
-        tabs.add(KeyboardTab("RECENT", "RECENT"))
-        tabs.add(KeyboardTab("SAVED", "SAVED", isList = true))
-        tabs.add(KeyboardTab("ALL", "ALL"))
+        tabs.add(KeyboardTab("cat_combining", "COMBINING"))
+        tabs.add(KeyboardTab("cat_templates", "STYLES", isList = true))
         tabs.add(KeyboardTab("INTRO", "INTRO", isList = true))
         tabs.add(KeyboardTab("OUTRO", "OUTRO", isList = true))
-
-        catalogSections.forEach { sec ->
-            val listMode = sec.id in setOf("names", "bios", "templates", "frames", "dividers", "intro", "outro", "urdu", "decorations")
-            tabs.add(KeyboardTab("cat_${sec.id}", sec.title.uppercase(), isList = listMode))
-        }
-        customCategories.forEach { cat ->
-            tabs.add(KeyboardTab("custom_${cat.id}", cat.name.uppercase()))
-        }
+        tabs.add(KeyboardTab("cat_urdu", "URDU", isList = true))
+        tabs.add(KeyboardTab("cat_decorations", "DECORATIONS", isList = true))
+        tabs.add(KeyboardTab("cat_little_abc", "LITTLE ABC"))
+        tabs.add(KeyboardTab("cat_stars", "STARS"))
+        tabs.add(KeyboardTab("cat_sets", "SETS"))
+        tabs.add(KeyboardTab("RECENT", "RECENT"))
+        tabs.add(KeyboardTab("SAVED", "SAVED", isList = true))
 
         val container = binding.categoryTabsContainer
         container.removeAllViews()
@@ -425,8 +430,10 @@ class EditorActivity : AppCompatActivity() {
         tabs.forEachIndexed { index, tab ->
             val tv = TextView(this).apply {
                 text = tab.label
-                textSize = 11f
-                setPadding((12 * density).toInt(), (6 * density).toInt(), (12 * density).toInt(), (6 * density).toInt())
+                textSize = 11.5f
+                gravity = Gravity.CENTER
+                typeface = Typeface.DEFAULT_BOLD
+                setPadding((14 * density).toInt(), (6 * density).toInt(), (14 * density).toInt(), (6 * density).toInt())
                 setOnClickListener { selectTab(index) }
                 setOnLongClickListener {
                     selectTab(index)
@@ -498,21 +505,18 @@ class EditorActivity : AppCompatActivity() {
         return when {
             tab.id == "ALPHABET" -> alphabet[activeLetter] ?: emptyList()
             tab.id == "RECENT" -> LocalStore.getRecentSymbols(this)
-            tab.id == "SAVED" -> LocalStore.getSavedTexts(this)
-            tab.id == "INTRO" -> OfflineRepository.getDecorations().filter { it.type == "intro" }.map { it.text }
-            tab.id == "OUTRO" -> OfflineRepository.getDecorations().filter { it.type == "outro" }.map { it.text }
-            tab.id == "ALL" -> {
-                val q = binding.symbolSearchInput.text.toString().trim()
-                val all = catalogSections.flatMap { it.items }
-                if (q.isEmpty()) all.take(400) else all.filter { it.contains(q, ignoreCase = true) }.take(400)
+            tab.id == "SAVED" -> {
+                (LocalStore.getSavedTexts(this) + LocalStore.getFavorites(this)).distinct()
+            }
+            tab.id == "INTRO" -> {
+                catalogSections.find { it.id == "intro" }?.items ?: emptyList()
+            }
+            tab.id == "OUTRO" -> {
+                catalogSections.find { it.id == "outro" }?.items ?: emptyList()
             }
             tab.id.startsWith("cat_") -> {
                 val secId = tab.id.removePrefix("cat_")
                 catalogSections.find { it.id == secId }?.items ?: emptyList()
-            }
-            tab.id.startsWith("custom_") -> {
-                val catId = tab.id.removePrefix("custom_")
-                customCategories.find { it.id == catId }?.items ?: emptyList()
             }
             else -> emptyList()
         }
@@ -546,7 +550,7 @@ class EditorActivity : AppCompatActivity() {
             "Insert Tab Items into Editor"
         )
         AlertDialog.Builder(this)
-            .setTitle("Bulk Copy (${tab.label})")
+            .setTitle("Copy Tab (${tab.label})")
             .setItems(options) { _, which ->
                 when (which) {
                     0 -> copyActiveTabItems(spaced = false)
@@ -561,10 +565,8 @@ class EditorActivity : AppCompatActivity() {
     private fun renderActiveTab() {
         val tab = tabs.getOrNull(activeTabIndex) ?: return
         binding.alphaLetterTabsWrapper.visibility = if (tab.id == "ALPHABET") View.VISIBLE else View.GONE
-        binding.symbolSearchBox.visibility = if (tab.id == "ALL") View.VISIBLE else View.GONE
 
         val items = getActiveTabItems()
-
         val lm = if (tab.isList) {
             LinearLayoutManager(this)
         } else {
@@ -592,17 +594,40 @@ class EditorActivity : AppCompatActivity() {
     private fun onKeyLongPressed(value: String) {
         val tab = tabs.getOrNull(activeTabIndex)
         if (tab?.id == "SAVED") {
+            val options = arrayOf("Copy", "Delete from Saved")
             AlertDialog.Builder(this)
-                .setTitle("Delete Saved Text?")
+                .setTitle("Saved Item")
                 .setMessage(value)
-                .setPositiveButton("Delete") { _, _ ->
-                    LocalStore.deleteSavedText(this, value)
-                    renderActiveTab()
+                .setItems(options) { _, which ->
+                    when (which) {
+                        0 -> LocalStore.copyAndTrack(this, value)
+                        1 -> {
+                            LocalStore.deleteSavedText(this, value)
+                            if (LocalStore.isFavorite(this, value)) {
+                                LocalStore.toggleFavorite(this, value)
+                            }
+                            renderActiveTab()
+                            Toast.makeText(this, "Removed from Saved", Toast.LENGTH_SHORT).show()
+                        }
+                    }
                 }
                 .setNegativeButton("Cancel", null)
                 .show()
         } else {
-            LocalStore.copyAndTrack(this, value)
+            val options = arrayOf("Save to Saved Tab", "Copy Symbol")
+            AlertDialog.Builder(this)
+                .setTitle(value)
+                .setItems(options) { _, which ->
+                    when (which) {
+                        0 -> {
+                            LocalStore.saveText(this, value)
+                            Toast.makeText(this, "Saved to Saved tab!", Toast.LENGTH_SHORT).show()
+                        }
+                        1 -> LocalStore.copyAndTrack(this, value)
+                    }
+                }
+                .setNegativeButton("Cancel", null)
+                .show()
         }
     }
 
@@ -623,16 +648,5 @@ class EditorActivity : AppCompatActivity() {
         } else {
             binding.editor.text.toString()
         }
-    }
-
-    private fun showThemePicker() {
-        AlertDialog.Builder(this)
-            .setTitle("Choose Theme")
-            .setSingleChoiceItems(ThemeManager.getThemeNames(), ThemeManager.getCurrentIndex(this)) { dialog, which ->
-                ThemeManager.setIndex(this, which)
-                applyTheme()
-                dialog.dismiss()
-            }
-            .show()
     }
 }

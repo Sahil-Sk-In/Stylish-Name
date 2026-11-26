@@ -14,7 +14,7 @@ import com.sahil.namemaker.utils.ThemeManager
 
 class KeyboardKeyAdapter(
     private val context: Context,
-    private val typeface: Typeface,
+    private var typeface: Typeface,
     private val onKeyClick: (String) -> Unit,
     private val onKeyLongClick: ((String) -> Unit)? = null
 ) : RecyclerView.Adapter<KeyboardKeyAdapter.KeyHolder>() {
@@ -22,6 +22,11 @@ class KeyboardKeyAdapter(
     private val items = mutableListOf<String>()
     private var listMode = false
     private var theme: S2Theme = ThemeManager.getCurrent(context)
+
+    fun setTypeface(newTypeface: Typeface) {
+        typeface = newTypeface
+        notifyDataSetChanged()
+    }
 
     fun setTheme(newTheme: S2Theme) {
         theme = newTheme
