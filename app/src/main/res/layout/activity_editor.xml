@@ -1,0 +1,532 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/editorRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#E8B4B8"
+    android:orientation="vertical">
+
+    <!-- Header Bar -->
+    <LinearLayout
+        android:id="@+id/editorHeader"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:background="#1A1A2E"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp">
+
+        <ImageButton
+            android:id="@+id/btnBack"
+            android:layout_width="34dp"
+            android:layout_height="34dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Back"
+            android:padding="4dp"
+            android:scaleType="centerInside"
+            android:src="@drawable/ic_back" />
+
+        <TextView
+            android:id="@+id/headerTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:text="Name Maker Studio"
+            android:textColor="#E8B4B8"
+            android:textSize="17sp"
+            android:textStyle="bold" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1" />
+
+        <TextView
+            android:id="@+id/btnFontSize"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:clickable="true"
+            android:focusable="true"
+            android:paddingHorizontal="8dp"
+            android:paddingVertical="4dp"
+            android:text="17▼"
+            android:textColor="#E8B4B8"
+            android:textSize="15sp"
+            android:textStyle="bold" />
+
+        <ImageButton
+            android:id="@+id/btnDots"
+            android:layout_width="34dp"
+            android:layout_height="34dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Options"
+            android:padding="4dp"
+            android:scaleType="centerInside"
+            android:src="@drawable/ic_dots" />
+    </LinearLayout>
+
+    <!-- Multiline Text Editor Box -->
+    <FrameLayout
+        android:id="@+id/editorContainer"
+        android:layout_width="match_parent"
+        android:layout_height="190dp"
+        android:paddingHorizontal="8dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="4dp">
+
+        <EditText
+            android:id="@+id/editor"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/bg_editor_white"
+            android:freezesText="true"
+            android:gravity="start|top"
+            android:hint="Enter your text or tap symbols below..."
+            android:imeOptions="actionDone"
+            android:inputType="textMultiLine|textNoSuggestions"
+            android:paddingHorizontal="14dp"
+            android:paddingTop="12dp"
+            android:paddingBottom="42dp"
+            android:saveEnabled="true"
+            android:textColor="#1A1A2E"
+            android:textColorHint="#886B7280"
+            android:textIsSelectable="true"
+            android:textSize="17sp" />
+
+        <ImageButton
+            android:id="@+id/btnCornerCopy"
+            android:layout_width="34dp"
+            android:layout_height="34dp"
+            android:layout_gravity="end|bottom"
+            android:layout_marginEnd="6dp"
+            android:layout_marginBottom="6dp"
+            android:background="@drawable/bg_corner_copy"
+            android:contentDescription="Copy text"
+            android:padding="6dp"
+            android:scaleType="centerInside"
+            android:src="@drawable/ic_copy"
+            app:tint="#1A1A2E" />
+    </FrameLayout>
+
+    <!-- 2-Row 20-Button Toolbar -->
+    <LinearLayout
+        android:id="@+id/editorToolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#C9A9A6"
+        android:orientation="vertical"
+        android:padding="6dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:weightSum="10">
+
+            <ImageButton
+                android:id="@+id/btnUndo"
+                android:layout_width="0dp"
+                android:layout_height="38dp"
+                android:layout_marginEnd="2dp"
+                android:layout_weight="1"
+                android:background="@drawable/bg_toolbar_btn"
+                android:contentDescription="Undo"
+                android:scaleType="centerInside"
+                android:src="@drawable/ic_undo"
+                app:tint="#1A1A2E" />
+
+            <ImageButton
+                android:id="@+id/btnRedo"
+                android:layout_width="0dp"
+                android:layout_height="38dp"
+                android:layout_marginEnd="2dp"
+                android:layout_weight="1"
+                android:background="@drawable/bg_toolbar_btn"
+                android:contentDescription="Redo"
+                android:scaleType="centerInside"
+                android:src="@drawable/ic_redo"
+                app:tint="#1A1A2E" />
+
+            <ImageButton
+                android:id="@+id/btnClipboard"
+                android:layout_width="0dp"
+                android:layout_height="38dp"
+                android:layout_marginEnd="2dp"
+                android:layout_weight="1"
+                android:background="@drawable/bg_toolbar_btn"
+                android:contentDescription="Paste"
+                android:scaleType="centerInside"
+                android:src="@drawable/ic_clipboard"
+                app:tint="#1A1A2E" />
+
+            <ImageButton
+                android:id="@+id/btnKeyboard"
+                android:layout_width="0dp"
+                android:layout_height="38dp"
+                android:layout_marginEnd="2dp"
+                android:layout_weight="1"
+                android:background="@drawable/bg_toolbar_btn"
+                android:contentDescription="System Keyboard"
+                android:scaleType="centerInside"
+                android:src="@drawable/ic_keyboard"
+                app:tint="#1A1A2E" />
+
+            <ImageButton
+                android:id="@+id/btnCursorStart"
+                android:layout_width="0dp"
+                android:layout_height="38dp"
+                android:layout_marginEnd="2dp"
+                android:layout_weight="1"
+                android:background="@drawable/bg_toolbar_btn"
+                android:contentDescription="Cursor Start"
+                android:scaleType="centerInside"
+                android:src="@drawable/ic_cursor_start"
+                app:tint="#1A1A2E" />
+
+            <ImageButton
+                android:id="@+id/btnCursorUp"
+                android:layout_width="0dp"
+                android:layout_height="38dp"
+                android:layout_marginEnd="2dp"
+                android:layout_weight="1"
+                android:background="@drawable/bg_toolbar_btn"
+                android:contentDescription="Cursor Up"
+                android:scaleType="centerInside"
+                android:src="@drawable/ic_cursor_up"
+                app:tint="#1A1A2E" />
+
+            <ImageButton
+                android:id="@+id/btnCursorEnd"
+                android:layout_width="0dp"
+                android:layout_height="38dp"
+                android:layout_marginEnd="2dp"
+                android:layout_weight="1"
+                android:background="@drawable/bg_toolbar_btn"
+                android:contentDescription="Cursor End"
+                android:scaleType="centerInside"
+                android:src="@drawable/ic_cursor_end"
+                app:tint="#1A1A2E" />
+
+            <ImageButton
+                android:id="@+id/btnSearch"
+                android:layout_width="0dp"
+                android:layout_height="38dp"
+                android:layout_marginEnd="2dp"
+                android:layout_weight="1"
+                android:background="@drawable/bg_toolbar_btn"
+                android:contentDescription="Find and Replace"
+                android:scaleType="centerInside"
+                android:src="@drawable/ic_search"
+                app:tint="#1A1A2E" />
+
+            <ImageButton
+                android:id="@+id/btnInfo"
+                android:layout_width="0dp"
+                android:layout_height="38dp"
+                android:layout_marginEnd="2dp"
+                android:layout_weight="1"
+                android:background="@drawable/bg_toolbar_btn"
+                android:contentDescription="Text Info"
+                android:scaleType="centerInside"
+                android:src="@drawable/ic_info"
+                app:tint="#1A1A2E" />
+
+            <ImageButton
+                android:id="@+id/btnClear"
+                android:layout_width="0dp"
+                android:layout_height="38dp"
+                android:layout_weight="1"
+                android:background="@drawable/bg_toolbar_btn"
+                android:contentDescription="Clear"
+                android:scaleType="centerInside"
+                android:src="@drawable/ic_clear"
+                app:tint="#1A1A2E" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:weightSum="10">
+
+            <ImageButton
+                android:id="@+id/btnSelectAll"
+                android:layout_width="0dp"
+                android:layout_height="38dp"
+                android:layout_marginEnd="2dp"
+                android:layout_weight="1"
+                android:background="@drawable/bg_toolbar_btn"
+                android:contentDescription="Select All"
+                android:scaleType="centerInside"
+                android:src="@drawable/ic_select_mode"
+                app:tint="#1A1A2E" />
+
+            <ImageButton
+                android:id="@+id/btnAlign"
+                android:layout_width="0dp"
+                android:layout_height="38dp"
+                android:layout_marginEnd="2dp"
+                android:layout_weight="1"
+                android:background="@drawable/bg_toolbar_btn"
+                android:contentDescription="Align"
+                android:scaleType="centerInside"
+                android:src="@drawable/ic_align_left"
+                app:tint="#1A1A2E" />
+
+            <ImageButton
+                android:id="@+id/btnCut"
+                android:layout_width="0dp"
+                android:layout_height="38dp"
+                android:layout_marginEnd="2dp"
+                android:layout_weight="1"
+                android:background="@drawable/bg_toolbar_btn"
+                android:contentDescription="Cut"
+                android:scaleType="centerInside"
+                android:src="@drawable/ic_cut"
+                app:tint="#1A1A2E" />
+
+            <ImageButton
+                android:id="@+id/btnCursorLeft"
+                android:layout_width="0dp"
+                android:layout_height="38dp"
+                android:layout_marginEnd="2dp"
+                android:layout_weight="1"
+                android:background="@drawable/bg_toolbar_btn"
+                android:contentDescription="Cursor Left"
+                android:scaleType="centerInside"
+                android:src="@drawable/ic_cursor_left"
+                app:tint="#1A1A2E" />
+
+            <ImageButton
+                android:id="@+id/btnCursorDown"
+                android:layout_width="0dp"
+                android:layout_height="38dp"
+                android:layout_marginEnd="2dp"
+                android:layout_weight="1"
+                android:background="@drawable/bg_toolbar_btn"
+                android:contentDescription="Cursor Down"
+                android:scaleType="centerInside"
+                android:src="@drawable/ic_cursor_down"
+                app:tint="#1A1A2E" />
+
+            <ImageButton
+                android:id="@+id/btnCursorRight"
+                android:layout_width="0dp"
+                android:layout_height="38dp"
+                android:layout_marginEnd="2dp"
+                android:layout_weight="1"
+                android:background="@drawable/bg_toolbar_btn"
+                android:contentDescription="Cursor Right"
+                android:scaleType="centerInside"
+                android:src="@drawable/ic_cursor_right"
+                app:tint="#1A1A2E" />
+
+            <ImageButton
+                android:id="@+id/btnNewLine"
+                android:layout_width="0dp"
+                android:layout_height="38dp"
+                android:layout_marginEnd="2dp"
+                android:layout_weight="1"
+                android:background="@drawable/bg_toolbar_btn"
+                android:contentDescription="New Line"
+                android:scaleType="centerInside"
+                android:src="@drawable/ic_newline"
+                app:tint="#1A1A2E" />
+
+            <ImageButton
+                android:id="@+id/btnBackspace"
+                android:layout_width="0dp"
+                android:layout_height="38dp"
+                android:layout_marginEnd="2dp"
+                android:layout_weight="1"
+                android:background="@drawable/bg_toolbar_btn"
+                android:contentDescription="Backspace"
+                android:scaleType="centerInside"
+                android:src="@drawable/ic_backspace"
+                app:tint="#1A1A2E" />
+
+            <ImageButton
+                android:id="@+id/btnCopy"
+                android:layout_width="0dp"
+                android:layout_height="38dp"
+                android:layout_marginEnd="2dp"
+                android:layout_weight="1"
+                android:background="@drawable/bg_toolbar_btn"
+                android:contentDescription="Copy"
+                android:scaleType="centerInside"
+                android:src="@drawable/ic_copy"
+                app:tint="#1A1A2E" />
+
+            <ImageButton
+                android:id="@+id/btnSpace"
+                android:layout_width="0dp"
+                android:layout_height="38dp"
+                android:layout_weight="1"
+                android:background="@drawable/bg_toolbar_btn"
+                android:contentDescription="Space"
+                android:scaleType="centerInside"
+                android:src="@drawable/ic_space"
+                app:tint="#1A1A2E" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Collapsible Find & Replace Panel -->
+    <LinearLayout
+        android:id="@+id/findReplacePanel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#C9A9A6"
+        android:orientation="vertical"
+        android:padding="10dp"
+        android:visibility="gone">
+
+        <EditText
+            android:id="@+id/findInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="6dp"
+            android:background="@drawable/bg_input"
+            android:hint="Find what..."
+            android:padding="8dp"
+            android:singleLine="true"
+            android:textSize="13sp" />
+
+        <EditText
+            android:id="@+id/replaceInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="6dp"
+            android:background="@drawable/bg_input"
+            android:hint="Replace with..."
+            android:padding="8dp"
+            android:singleLine="true"
+            android:textSize="13sp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btnFindPrev"
+                android:layout_width="0dp"
+                android:layout_height="36dp"
+                android:layout_marginEnd="4dp"
+                android:layout_weight="1"
+                android:text="Prev"
+                android:textSize="11sp" />
+
+            <Button
+                android:id="@+id/btnFindNext"
+                android:layout_width="0dp"
+                android:layout_height="36dp"
+                android:layout_marginEnd="4dp"
+                android:layout_weight="1"
+                android:text="Next"
+                android:textSize="11sp" />
+
+            <Button
+                android:id="@+id/btnReplace"
+                android:layout_width="0dp"
+                android:layout_height="36dp"
+                android:layout_marginEnd="4dp"
+                android:layout_weight="1"
+                android:text="Replace"
+                android:textSize="11sp" />
+
+            <Button
+                android:id="@+id/btnReplaceAll"
+                android:layout_width="0dp"
+                android:layout_height="36dp"
+                android:layout_weight="1"
+                android:text="All"
+                android:textSize="11sp" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Category Tabs Bar -->
+    <HorizontalScrollView
+        android:id="@+id/categoryTabsScroll"
+        android:layout_width="match_parent"
+        android:layout_height="44dp"
+        android:background="#1A1A2E"
+        android:fillViewport="true"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:id="@+id/categoryTabsContainer"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingHorizontal="6dp" />
+    </HorizontalScrollView>
+
+    <!-- A-Z Letter Chips Bar (Shown on ALPHABET tab) -->
+    <HorizontalScrollView
+        android:id="@+id/alphaLetterTabsWrapper"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#C9A9A6"
+        android:fillViewport="true"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:id="@+id/alphaLetterTabsContainer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingHorizontal="6dp"
+            android:paddingVertical="4dp" />
+    </HorizontalScrollView>
+
+    <!-- Search Bar (Shown on ALL tab) -->
+    <LinearLayout
+        android:id="@+id/symbolSearchBox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        android:background="@drawable/bg_search_pill"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="12dp"
+        android:paddingVertical="4dp"
+        android:visibility="gone">
+
+        <ImageView
+            android:layout_width="18dp"
+            android:layout_height="18dp"
+            android:layout_marginEnd="8dp"
+            android:src="@drawable/ic_search"
+            app:tint="#1A1A2E" />
+
+        <EditText
+            android:id="@+id/symbolSearchInput"
+            android:layout_width="0dp"
+            android:layout_height="38dp"
+            android:layout_weight="1"
+            android:background="@android:color/transparent"
+            android:hint="Search across 12,000+ styles &amp; symbols..."
+            android:imeOptions="actionSearch"
+            android:inputType="text"
+            android:singleLine="true"
+            android:textColor="#1A1A2E"
+            android:textSize="14sp" />
+    </LinearLayout>
+
+    <!-- Keyboard Keys Grid / List -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/keyboardRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:clipToPadding="false"
+        android:padding="6dp" />
+
+</LinearLayout>

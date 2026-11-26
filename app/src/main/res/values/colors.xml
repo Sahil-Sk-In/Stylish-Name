@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="primary">#06B6D4</color>
-    <color name="primary_dark">#0891B2</color>
-    <color name="background">#0F172A</color>
-    <color name="surface">#1E293B</color>
+    <color name="primary">#1A1A2E</color>
+    <color name="primary_pink">#E8B4B8</color>
+    <color name="toolbar_bg">#C9A9A6</color>
+    <color name="background">#F5E6E8</color>
+    <color name="surface">#FFFFFF</color>
 </resources>

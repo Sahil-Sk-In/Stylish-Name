@@ -34,35 +34,36 @@ jobs:
 
     - name: Rename APKs for Release
       run: |
-        cp app/build/outputs/apk/release/app-release.apk NameMaker-v1.0.0-Release-Signed.apk
-        cp app/build/outputs/apk/debug/app-debug.apk NameMaker-v1.0.0-Debug.apk
+        cp app/build/outputs/apk/release/app-release.apk NameMaker-v2.0.0-Release-Signed.apk
+        cp app/build/outputs/apk/debug/app-debug.apk NameMaker-v2.0.0-Debug.apk
 
     - name: Upload Artifacts
       uses: actions/upload-artifact@v4
       with:
         name: NameMaker-APKs
         path: |
-          NameMaker-v1.0.0-Release-Signed.apk
-          NameMaker-v1.0.0-Debug.apk
+          NameMaker-v2.0.0-Release-Signed.apk
+          NameMaker-v2.0.0-Debug.apk
 
     - name: Publish to GitHub Releases Page
       uses: softprops/action-gh-release@v2
       with:
-        tag_name: v1.0.0
-        name: "Name Maker v1.0.0 (Official Release)"
+        tag_name: v2.0.0
+        name: "Name Maker v2.0.0 (Official Pure Kotlin Clone)"
         body: |
-          ### 🎉 Name Maker v1.0.0 - Official Production Release
-          
-          **Download:** Download the `NameMaker-v1.0.0-Release-Signed.apk` file from **Assets** below and install it directly on your Android phone.
+          ### 🎉 Name Maker v2.0.0 - Official Pure Kotlin Release
+
+          **Download:** Download `NameMaker-v2.0.0-Release-Signed.apk` from **Assets** below and install directly on Android.
 
           ---
           #### 🌟 Key Features:
-          - 🔑 **Permanent Production Signature:** Signed with a permanent Keystore (valid through 2054) ensuring zero package/signature conflict on future updates.
-          - 🚫 **No Activation Lock / Tamper Guard Bypassed:** Operates independently without server locks or activation keys.
-          - ⚡ **100% Offline & Instant Loading (0ms):** Over 30+ stylish Unicode and TTF fonts, symbols, and VIP bios/names generator work completely offline.
-          - 💎 **Modern Architecture:** Built with pure Kotlin, Jetpack Compose, and Material 3 Dark AMOLED theme.
+          - 🎨 **Exact Salaam S2 UI & 12 Themes:** Signature Salaam Pink (`#E8B4B8`) & Navy (`#1A1A2E`) default theme, animated concentric rings Home screen, plus 11 additional themes (Day Light, Night Dark, AMOLED Black, Midnight Blue, Crimson Black, Teal Black, etc.).
+          - ⌨️ **Full Keyboard Studio (`EditorActivity`):** 2-row 20-button editor toolbar (Undo, Redo, Find & Replace, Cursor controls, Select All, Align, Font Size picker), A–Z Alphabet tab (114+ stylized variants per letter), 18+ Unicode script blocks, Recent & Saved tabs, and live global search.
+          - ⚡ **Crunch Style Generator:** Transform any name across 25+ keyboard fonts, 100+ Intro/Outro decorations, and combining symbol mixing.
+          - 📚 **Style Book (12,236+ Items):** Complete offline catalog across 10 categories (Names, Templates, Frames, Dividers, Symbols, Letters, Marks, Scripts, Unicode, Invisible) + Make Name frame builder + Curated Posts & Moments feed.
+          - 🔒 **100% Offline & Zero Locks:** No `INTERNET` permission, no Firebase/cloud dependency, no activation key, and signed with a permanent production keystore (`v2.0.0` updates smoothly over `v1.0.0`).
         files: |
-          NameMaker-v1.0.0-Release-Signed.apk
-          NameMaker-v1.0.0-Debug.apk
+          NameMaker-v2.0.0-Release-Signed.apk
+          NameMaker-v2.0.0-Debug.apk
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
