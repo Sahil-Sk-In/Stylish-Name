@@ -53,14 +53,14 @@ jobs:
         body: |
           ### 🎉 Name Maker v1.0.0 - Official Production Release
           
-          **ডাউনলোড:** নিচের Assets থেকে সরাসরি `NameMaker-v1.0.0-Release-Signed.apk` ফাইলটি ডাউনলোড করে ফোনে ইনস্টল করুন।
+          **Download:** Download the `NameMaker-v1.0.0-Release-Signed.apk` file from **Assets** below and install it directly on your Android phone.
 
           ---
-          #### 🌟 প্রধান সুবিধাসমূহ:
-          - 🔑 **স্থায়ী প্রোডাকশন সিগনেচার:** স্থায়ী Keystore দ্বারা সাইন করা, যাতে ভবিষ্যতে যেকোনো নতুন ভার্সনে আপডেট করার সময় কোনো প্যাকেজ বা সিগনেচার কনফ্লিক্ট না হয়।
-          - 🚫 **নো অ্যাক্টিভেশন কী / নো ট্যাম্পার লক:** কোনো সার্ভার বা কী লকিং নেই, সরাসরি চালু হবে।
-          - ⚡ **১০০% অফলাইন ও ফাস্ট:** ৩০+ স্টাইলিশ ইউনিকোড ও TTF ফন্ট, স্পেশাল S2 সিম্বল এবং ভিআইপি বায়ো/নেম জেনারেটর সম্পূর্ণ অফলাইনে কাজ করে।
-          - 💎 **আধুনিক UI:** Jetpack Compose Material 3 AMOLED Dark থিম।
+          #### 🌟 Key Features:
+          - 🔑 **Permanent Production Signature:** Signed with a permanent Keystore (valid through 2054) ensuring zero package/signature conflict on future updates.
+          - 🚫 **No Activation Lock / Tamper Guard Bypassed:** Operates independently without server locks or activation keys.
+          - ⚡ **100% Offline & Instant Loading (0ms):** Over 30+ stylish Unicode and TTF fonts, symbols, and VIP bios/names generator work completely offline.
+          - 💎 **Modern Architecture:** Built with pure Kotlin, Jetpack Compose, and Material 3 Dark AMOLED theme.
         files: |
           NameMaker-v1.0.0-Release-Signed.apk
           NameMaker-v1.0.0-Debug.apk

@@ -2,7 +2,7 @@
 > **Pure Kotlin Modern Android App for VIP Stylish Names, Bios & Unicode Symbols**  
 > *Crafted with ❤️ by Sahil*
 
-[![Build Name Maker APK](https://github.com/sahil-dev12/Name_Maker/actions/workflows/build.yml/badge.svg)](https://github.com/sahil-dev12/Name_Maker/actions/workflows/build.yml)
+[![Build and Release Name Maker APK](https://github.com/Sahil-Sk-In/Stylish-Name/actions/workflows/build.yml/badge.svg)](https://github.com/Sahil-Sk-In/Stylish-Name/actions/workflows/build.yml)
 
 ---
 
@@ -22,9 +22,8 @@
 
 ### Method 1: Automatic Cloud Build (GitHub Actions - Recommended)
 1. Push to this repository (`git push -u origin main`).
-2. Go to the **Actions** tab on [github.com/sahil-dev12/Name_Maker](https://github.com/sahil-dev12/Name_Maker/actions).
-3. The `Build Name Maker APK` workflow runs automatically.
-4. Download the ready-to-install `NameMaker-Debug-APK` directly from **Artifacts**!
+2. Go to the **Actions** or **Releases** tab on [github.com/Sahil-Sk-In/Stylish-Name](https://github.com/Sahil-Sk-In/Stylish-Name).
+3. Download the official `NameMaker-v1.0.0-Release-Signed.apk` directly!
 
 ### Method 2: Android Studio (Local)
 1. Open Android Studio.
