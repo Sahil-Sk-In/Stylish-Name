@@ -70,9 +70,17 @@ class CatalogFragment : Fragment() {
         })
 
         btnCopyAll?.setOnClickListener {
-            val all = adapter.getAllValues().take(200)
+            val all = adapter.getAllValues()
             if (all.isNotEmpty()) {
-                LocalStore.copyAndTrack(requireContext(), all.joinToString("\n"), "Copied ${all.size} items")
+                val sb = StringBuilder()
+                var count = 0
+                for (item in all) {
+                    if (sb.length + item.length + 1 > 350_000) break
+                    if (sb.isNotEmpty()) sb.append("\n")
+                    sb.append(item)
+                    count++
+                }
+                LocalStore.copyAndTrack(requireContext(), sb.toString(), "Copied $count items")
             }
         }
 

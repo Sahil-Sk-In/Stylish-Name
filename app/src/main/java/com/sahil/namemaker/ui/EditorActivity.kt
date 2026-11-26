@@ -207,11 +207,17 @@ class EditorActivity : AppCompatActivity() {
             if (txt.isNotEmpty()) {
                 LocalStore.copyAndTrack(this, txt)
             } else {
-                Toast.makeText(this, "Editor is empty", Toast.LENGTH_SHORT).show()
+                copyActiveTabItems(spaced = false)
             }
+        }
+        val copyLongAction = View.OnLongClickListener {
+            showBulkCopyDialog()
+            true
         }
         binding.btnCornerCopy.setOnClickListener(copyAction)
         binding.btnCopy.setOnClickListener(copyAction)
+        binding.btnCornerCopy.setOnLongClickListener(copyLongAction)
+        binding.btnCopy.setOnLongClickListener(copyLongAction)
 
         binding.btnUndo.setOnClickListener {
             val prev = history.undo()
@@ -404,7 +410,7 @@ class EditorActivity : AppCompatActivity() {
         tabs.add(KeyboardTab("OUTRO", "OUTRO", isList = true))
 
         catalogSections.forEach { sec ->
-            val listMode = sec.id in setOf("names", "templates", "frames", "dividers")
+            val listMode = sec.id in setOf("names", "bios", "templates", "frames", "dividers", "intro", "outro", "urdu", "decorations")
             tabs.add(KeyboardTab("cat_${sec.id}", sec.title.uppercase(), isList = listMode))
         }
         customCategories.forEach { cat ->
@@ -422,6 +428,11 @@ class EditorActivity : AppCompatActivity() {
                 textSize = 11f
                 setPadding((12 * density).toInt(), (6 * density).toInt(), (12 * density).toInt(), (6 * density).toInt())
                 setOnClickListener { selectTab(index) }
+                setOnLongClickListener {
+                    selectTab(index)
+                    copyActiveTabItems(spaced = false)
+                    true
+                }
             }
             val lp = LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, (32 * density).toInt())
             lp.marginEnd = (6 * density).toInt()
@@ -482,12 +493,9 @@ class EditorActivity : AppCompatActivity() {
         }
     }
 
-    private fun renderActiveTab() {
-        val tab = tabs.getOrNull(activeTabIndex) ?: return
-        binding.alphaLetterTabsWrapper.visibility = if (tab.id == "ALPHABET") View.VISIBLE else View.GONE
-        binding.symbolSearchBox.visibility = if (tab.id == "ALL") View.VISIBLE else View.GONE
-
-        val items: List<String> = when {
+    private fun getActiveTabItems(): List<String> {
+        val tab = tabs.getOrNull(activeTabIndex) ?: return emptyList()
+        return when {
             tab.id == "ALPHABET" -> alphabet[activeLetter] ?: emptyList()
             tab.id == "RECENT" -> LocalStore.getRecentSymbols(this)
             tab.id == "SAVED" -> LocalStore.getSavedTexts(this)
@@ -500,7 +508,7 @@ class EditorActivity : AppCompatActivity() {
             }
             tab.id.startsWith("cat_") -> {
                 val secId = tab.id.removePrefix("cat_")
-                catalogSections.find { it.id == secId }?.items?.take(600) ?: emptyList()
+                catalogSections.find { it.id == secId }?.items ?: emptyList()
             }
             tab.id.startsWith("custom_") -> {
                 val catId = tab.id.removePrefix("custom_")
@@ -508,6 +516,54 @@ class EditorActivity : AppCompatActivity() {
             }
             else -> emptyList()
         }
+    }
+
+    private fun copyActiveTabItems(spaced: Boolean) {
+        val tab = tabs.getOrNull(activeTabIndex) ?: return
+        val items = getActiveTabItems()
+        if (items.isEmpty()) {
+            Toast.makeText(this, "Current tab is empty", Toast.LENGTH_SHORT).show()
+            return
+        }
+        val sep = if (spaced) " " else "\n"
+        val sb = StringBuilder()
+        var count = 0
+        for (item in items) {
+            if (sb.length + item.length + sep.length > 350_000) break
+            if (sb.isNotEmpty()) sb.append(sep)
+            sb.append(item)
+            count++
+        }
+        LocalStore.copyAndTrack(this, sb.toString(), "Copied $count items from ${tab.label}!")
+    }
+
+    private fun showBulkCopyDialog() {
+        val tab = tabs.getOrNull(activeTabIndex) ?: return
+        val items = getActiveTabItems()
+        val options = arrayOf(
+            "Copy Current Tab - Lines (${items.size} items)",
+            "Copy Current Tab - Spaced (${items.size} items)",
+            "Insert Tab Items into Editor"
+        )
+        AlertDialog.Builder(this)
+            .setTitle("Bulk Copy (${tab.label})")
+            .setItems(options) { _, which ->
+                when (which) {
+                    0 -> copyActiveTabItems(spaced = false)
+                    1 -> copyActiveTabItems(spaced = true)
+                    2 -> if (items.isNotEmpty()) insertAtCursor(items.take(200).joinToString("\n"))
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun renderActiveTab() {
+        val tab = tabs.getOrNull(activeTabIndex) ?: return
+        binding.alphaLetterTabsWrapper.visibility = if (tab.id == "ALPHABET") View.VISIBLE else View.GONE
+        binding.symbolSearchBox.visibility = if (tab.id == "ALL") View.VISIBLE else View.GONE
+
+        val items = getActiveTabItems()
 
         val lm = if (tab.isList) {
             LinearLayoutManager(this)
