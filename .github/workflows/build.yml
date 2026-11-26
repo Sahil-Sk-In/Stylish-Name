@@ -1,9 +1,14 @@
-name: Build Name Maker APK
+name: Build and Release Name Maker APK
 
 on:
   push:
     branches: [ "main", "master" ]
+    tags:
+      - 'v*'
   workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -27,14 +32,37 @@ jobs:
     - name: Build Release and Debug APKs
       run: gradle assembleRelease assembleDebug --stacktrace
 
-    - name: Upload Release APK (Permanent Signed)
-      uses: actions/upload-artifact@v4
-      with:
-        name: NameMaker-Release-Signed-APK
-        path: app/build/outputs/apk/release/app-release.apk
+    - name: Rename APKs for Release
+      run: |
+        cp app/build/outputs/apk/release/app-release.apk NameMaker-v1.0.0-Release-Signed.apk
+        cp app/build/outputs/apk/debug/app-debug.apk NameMaker-v1.0.0-Debug.apk
 
-    - name: Upload Debug APK
+    - name: Upload Artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: NameMaker-Debug-APK
-        path: app/build/outputs/apk/debug/app-debug.apk
+        name: NameMaker-APKs
+        path: |
+          NameMaker-v1.0.0-Release-Signed.apk
+          NameMaker-v1.0.0-Debug.apk
+
+    - name: Publish to GitHub Releases Page
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: v1.0.0
+        name: "Name Maker v1.0.0 (Official Release)"
+        body: |
+          ### 🎉 Name Maker v1.0.0 - Official Production Release
+          
+          **ডাউনলোড:** নিচের Assets থেকে সরাসরি `NameMaker-v1.0.0-Release-Signed.apk` ফাইলটি ডাউনলোড করে ফোনে ইনস্টল করুন।
+
+          ---
+          #### 🌟 প্রধান সুবিধাসমূহ:
+          - 🔑 **স্থায়ী প্রোডাকশন সিগনেচার:** স্থায়ী Keystore দ্বারা সাইন করা, যাতে ভবিষ্যতে যেকোনো নতুন ভার্সনে আপডেট করার সময় কোনো প্যাকেজ বা সিগনেচার কনফ্লিক্ট না হয়।
+          - 🚫 **নো অ্যাক্টিভেশন কী / নো ট্যাম্পার লক:** কোনো সার্ভার বা কী লকিং নেই, সরাসরি চালু হবে।
+          - ⚡ **১০০% অফলাইন ও ফাস্ট:** ৩০+ স্টাইলিশ ইউনিকোড ও TTF ফন্ট, স্পেশাল S2 সিম্বল এবং ভিআইপি বায়ো/নেম জেনারেটর সম্পূর্ণ অফলাইনে কাজ করে।
+          - 💎 **আধুনিক UI:** Jetpack Compose Material 3 AMOLED Dark থিম।
+        files: |
+          NameMaker-v1.0.0-Release-Signed.apk
+          NameMaker-v1.0.0-Debug.apk
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
