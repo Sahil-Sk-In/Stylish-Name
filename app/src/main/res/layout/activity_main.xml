@@ -138,7 +138,7 @@
                     android:id="@+id/icon_feed"
                     android:layout_width="21dp"
                     android:layout_height="21dp"
-                    android:contentDescription="Feed"
+                    android:contentDescription="Updates"
                     android:src="@drawable/ic_nav_updates" />
 
                 <TextView
@@ -147,7 +147,7 @@
                     android:layout_height="wrap_content"
                     android:gravity="center"
                     android:singleLine="true"
-                    android:text="Feed"
+                    android:text="Updates"
                     android:textSize="10sp"
                     android:textStyle="bold" />
             </LinearLayout>

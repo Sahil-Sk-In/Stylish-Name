@@ -18,6 +18,7 @@ import com.sahil.namemaker.adapter.StyleRowAdapter
 import com.sahil.namemaker.data.FeedItem
 import com.sahil.namemaker.data.OfflineRepository
 import com.sahil.namemaker.utils.FontUtils
+import com.sahil.namemaker.utils.LocalStore
 import com.sahil.namemaker.utils.ThemeManager
 import kotlinx.coroutines.launch
 
@@ -65,6 +66,20 @@ class FeedFragment : Fragment() {
             applyTheme()
             renderList()
         }
+        tabPosts?.setOnLongClickListener {
+            showMoments = false
+            applyTheme()
+            renderList()
+            copyCurrentTab(posts, "Salaam")
+            true
+        }
+        tabMoments?.setOnLongClickListener {
+            showMoments = true
+            applyTheme()
+            renderList()
+            copyCurrentTab(moments, "For You")
+            true
+        }
 
         etSearch?.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
@@ -78,8 +93,8 @@ class FeedFragment : Fragment() {
         lifecycleScope.launch {
             posts = OfflineRepository.getPosts(requireContext())
             moments = OfflineRepository.getMoments(requireContext())
-            tabPosts?.text = "Posts (${posts.size})"
-            tabMoments?.text = "Moments (${moments.size})"
+            tabPosts?.text = "Salaam (${posts.size})"
+            tabMoments?.text = "For You (${moments.size})"
             renderList()
             applyTheme()
         }
@@ -116,5 +131,19 @@ class FeedFragment : Fragment() {
                 it.author.contains(query, ignoreCase = true)
         }
         adapter.submitList(filtered.map { StyleDisplayItem(it.text, "${it.author} · ${it.category}") })
+    }
+
+    private fun copyCurrentTab(items: List<FeedItem>, label: String) {
+        val ctx = context ?: return
+        if (items.isEmpty()) return
+        val sb = StringBuilder()
+        var count = 0
+        for (item in items) {
+            if (sb.length + item.text.length + 2 > 350_000) break
+            if (sb.isNotEmpty()) sb.append("\n\n")
+            sb.append(item.text)
+            count++
+        }
+        LocalStore.copyAndTrack(ctx, sb.toString(), "Copied $count posts from $label!")
     }
 }

@@ -22,7 +22,7 @@ object ThemeManager {
     private const val KEY_INDEX = "theme_index"
 
     val THEMES: List<S2Theme> = listOf(
-        S2Theme("Salaam Pink", 0xFFE8B4B8.toInt(), 0xFF1A1A2E.toInt(), 0xFFC9A9A6.toInt(), 0xFFF5E6E8.toInt(), 0xFF1A1A2E.toInt(), 0xFFFFFFFF.toInt(), 0xFFE8B4B8.toInt(), 0xFFFFFFFF.toInt(), false),
+        S2Theme("Salaam Pink", 0xFFE898A8.toInt(), 0xFF1F1A2C.toInt(), 0xFFC9A9A6.toInt(), 0xFFFAF0F0.toInt(), 0xFF1F1A2C.toInt(), 0xFFFFFFFF.toInt(), 0xFFE898A8.toInt(), 0xFFFFFFFF.toInt(), false),
         S2Theme("Day Light", 0xFFE3ECFF.toInt(), 0xFF1E3A8A.toInt(), 0xFFBFD4FF.toInt(), 0xFFF8FAFF.toInt(), 0xFF1E3A8A.toInt(), 0xFFFFFFFF.toInt(), 0xFF3B82F6.toInt(), 0xFFFFFFFF.toInt(), false),
         S2Theme("Night Dark", 0xFF1E1E2E.toInt(), 0xFF11111B.toInt(), 0xFF313244.toInt(), 0xFF181825.toInt(), 0xFFCDD6F4.toInt(), 0xFFCDD6F4.toInt(), 0xFFCBA6F7.toInt(), 0xFF313244.toInt(), true),
         S2Theme("Forest Green", 0xFFD4EDDA.toInt(), 0xFF1B5E20.toInt(), 0xFFA5D6A7.toInt(), 0xFFE8F5E9.toInt(), 0xFF1B5E20.toInt(), 0xFFFFFFFF.toInt(), 0xFF4CAF50.toInt(), 0xFFFFFFFF.toInt(), false),

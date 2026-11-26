@@ -20,8 +20,8 @@
             android:id="@+id/tvFeedTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Curated Feed &amp; Moments"
-            android:textColor="#E8B4B8"
+            android:text="Updates"
+            android:textColor="#E898A8"
             android:textSize="20sp"
             android:textStyle="bold" />
 
@@ -31,10 +31,10 @@
             android:layout_height="40dp"
             android:layout_marginTop="10dp"
             android:background="@drawable/bg_search_pill"
-            android:hint="Search bios, quotes, tags..."
+            android:hint="Search updates..."
             android:paddingHorizontal="14dp"
             android:singleLine="true"
-            android:textColor="#1A1A2E"
+            android:textColor="#1F1A2C"
             android:textColorHint="#6B7280"
             android:textSize="14sp" />
 
@@ -52,8 +52,8 @@
                 android:layout_weight="1"
                 android:background="@drawable/bg_tab_selected"
                 android:gravity="center"
-                android:text="Posts (84)"
-                android:textColor="#1A1A2E"
+                android:text="Salaam"
+                android:textColor="#1F1A2C"
                 android:textSize="12sp"
                 android:textStyle="bold" />
 
@@ -64,7 +64,7 @@
                 android:layout_weight="1"
                 android:background="@drawable/bg_tab_unselected"
                 android:gravity="center"
-                android:text="Moments (39)"
+                android:text="For You"
                 android:textColor="#FFFFFF"
                 android:textSize="12sp"
                 android:textStyle="bold" />
