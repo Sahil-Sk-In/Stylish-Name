@@ -24,10 +24,16 @@ jobs:
       with:
         gradle-version: '8.4'
 
-    - name: Build Debug APK
-      run: gradle assembleDebug --stacktrace
+    - name: Build Release and Debug APKs
+      run: gradle assembleRelease assembleDebug --stacktrace
 
-    - name: Upload APK Artifact
+    - name: Upload Release APK (Permanent Signed)
+      uses: actions/upload-artifact@v4
+      with:
+        name: NameMaker-Release-Signed-APK
+        path: app/build/outputs/apk/release/app-release.apk
+
+    - name: Upload Debug APK
       uses: actions/upload-artifact@v4
       with:
         name: NameMaker-Debug-APK
